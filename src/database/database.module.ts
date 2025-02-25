@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
-import { UserEntity } from '../entity/user.entity';
+import { SqlLogger } from '../common/api/sql.logger';
 
 @Module({
   imports: [
@@ -17,9 +17,9 @@ import { UserEntity } from '../entity/user.entity';
         username: configService.get('DATABASE_USERNAME'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_DATABASE'),
-        entities: [UserEntity],
         timezone: 'local',
         namingStrategy: new SnakeNamingStrategy(),
+        logger: new SqlLogger(),
         logging: configService.get('DATABASE_LOGGING') === 'true',
         synchronize: false,
       }),
