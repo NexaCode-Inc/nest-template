@@ -174,8 +174,8 @@ $ npm run test:cov
   * 주로 key 값은 id 를 사용하게 되는데, number 주로 선언되며, 이에 대해 어떤 number 값을 사용하는지 주석으로 표기하면 찾기 용이합니다.
     * ex)
       * // <user.email, UserEntity> 
-      * const userEmailMap = new Map<string, UserEntity>()  
- 
+      * const userEmailMap = new Map<string, UserEntity>()
+* TypeORM 에서 Entity 작성시 join 된 데이터 모델은 반드시 ? 표기
 
 # 협업시 주의사항
 - formatting 으로 인한 git commit 이 일어나지 않도록 하기.

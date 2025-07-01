@@ -21,7 +21,7 @@ import { SqlLogger } from '../common/api/sql.logger';
         namingStrategy: new SnakeNamingStrategy(),
         logger: new SqlLogger(),
         logging: configService.get('DATABASE_LOGGING') === 'true',
-        synchronize: false,
+        synchronize: configService.get('DATABASE_SYNCHRONIZE') === 'true',
       }),
       async dataSourceFactory(options) {
         if (!options) {
