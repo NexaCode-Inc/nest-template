@@ -18,7 +18,7 @@ import { UserSocialModule } from './user_social/user.social.module';
       }),
     }),
     AuthModule,
-    UserSocialModule
+    UserSocialModule,
   ],
   controllers: [AppController],
   providers: [],

@@ -22,6 +22,7 @@ import { SqlLogger } from '../common/api/sql.logger';
         logger: new SqlLogger(),
         logging: configService.get('DATABASE_LOGGING') === 'true',
         synchronize: configService.get('DATABASE_SYNCHRONIZE') === 'true',
+        entities: [__dirname + '/../**/*.entity{.ts,.js}'],
       }),
       async dataSourceFactory(options) {
         if (!options) {
