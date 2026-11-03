@@ -27,7 +27,39 @@ export class SocialExtern {
     private readonly configService: ConfigService,
   ) {}
 
+  // Google access token 이 이 앱의 OAuth 클라이언트에 발급된 것인지 확인한다.
+  // userinfo 는 어느 앱에 발급된 토큰이든 사용자 정보를 돌려주므로, 확인하지 않으면
+  // 다른 앱(공격자의 앱)에서 받은 피해자의 토큰으로 이 앱에 피해자로 로그인할 수 있다.
+  // GOOGLE_CLIENT_IDS: 이 앱의 클라이언트 ID 목록(iOS·Android·Web 등, 쉼표로 구분)
+  private async verifyGoogleTokenAudience(token: string) {
+    const clientIds = this.configService
+      .getOrThrow<string>('GOOGLE_CLIENT_IDS')
+      .split(',')
+      .map((clientId) => clientId.trim())
+      .filter((clientId) => clientId.length > 0);
+
+    const { data } = await firstValueFrom(
+      this.httpService
+        .get('https://oauth2.googleapis.com/tokeninfo', {
+          params: { access_token: token },
+        })
+        .pipe(
+          catchError((error: AxiosError) => {
+            this.logger.error(`google token info failed: ${describeExternError(error)}`);
+            throw new UnauthorizedException('USER_SOCIAL_LOGIN_FAIL');
+          }),
+        ),
+    );
+
+    if (!clientIds.includes(data.aud)) {
+      this.logger.warn('google token issued to another client');
+      throw new UnauthorizedException('USER_SOCIAL_LOGIN_FAIL');
+    }
+  }
+
   async getUserByGoogleToken(token: string): Promise<IUserGetInfo> {
+    await this.verifyGoogleTokenAudience(token);
+
     const { data } = await firstValueFrom(
       this.httpService
         .get('https://www.googleapis.com/oauth2/v3/userinfo', {
@@ -39,6 +71,11 @@ export class SocialExtern {
           }),
         ),
     );
+
+    // 확인되지 않은 이메일로는 계정을 찾거나 만들지 않는다
+    if (data.email_verified !== true) {
+      throw new UnauthorizedException('USER_SOCIAL_LOGIN_FAIL');
+    }
 
     return {
       provider: 'GOOGLE',

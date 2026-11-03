@@ -32,6 +32,10 @@ MAIL_HOST=MAIL_HOST
 MAIL_PORT=MAIL_PORT
 MAIL_AUTH_ID=MAIL_ID
 MAIL_AUTH_PASSWORD=MAIL_PASSWORD
+
+# Google 로그인: 이 앱의 OAuth 클라이언트 ID (iOS·Android·Web 등 여러 개면 쉼표로 구분)
+# 다른 앱에 발급된 Google 토큰으로는 로그인할 수 없다
+GOOGLE_CLIENT_IDS=GOOGLE_CLIENT_IDS
 ```
 
 ## Installation

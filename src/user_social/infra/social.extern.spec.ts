@@ -74,6 +74,59 @@ describe('SocialExtern 소셜 공급자 호출 테스트', () => {
     expect(logSpy).not.toHaveBeenCalled();
   });
 
+  describe('Google', () => {
+    const givenGoogleResponses = (tokenInfo: object, userInfo: object) => {
+      httpService.get.mockImplementation((url: string) => {
+        const data = url === 'https://oauth2.googleapis.com/tokeninfo' ? tokenInfo : userInfo;
+        return of({ data } as AxiosResponse);
+      });
+    };
+
+    beforeEach(() => {
+      configService.getOrThrow.calledWith('GOOGLE_CLIENT_IDS').mockReturnValue('ios-client-id, android-client-id');
+    });
+
+    it('이 앱의 클라이언트 ID 로 발급된 토큰이면 사용자 정보가 나온 경우', async () => {
+      givenGoogleResponses(
+        { aud: 'android-client-id' },
+        { email: 'test@gmail.com', email_verified: true, family_name: '홍', given_name: '길동' },
+      );
+
+      const result = await sut.getUserByGoogleToken('GOOGLE_TOKEN');
+
+      expect(result.email).toBe('test@gmail.com');
+      expect(result.name).toBe('홍길동');
+      expect(httpService.get).toHaveBeenCalledWith('https://oauth2.googleapis.com/tokeninfo', {
+        params: { access_token: 'GOOGLE_TOKEN' },
+      });
+    });
+
+    it('다른 앱(클라이언트 ID)에 발급된 토큰이면 사용자 정보를 받지 않고 401 인 경우', async () => {
+      givenGoogleResponses({ aud: 'attacker-client-id' }, { email: 'victim@gmail.com', email_verified: true });
+
+      await expect(sut.getUserByGoogleToken('STOLEN_TOKEN')).rejects.toThrow(UnauthorizedException);
+
+      expect(httpService.get).toHaveBeenCalledTimes(1);
+      expect(httpService.get).not.toHaveBeenCalledWith(
+        'https://www.googleapis.com/oauth2/v3/userinfo',
+        expect.anything(),
+      );
+    });
+
+    it('토큰 확인 요청이 실패하면 401 인 경우', async () => {
+      httpService.get.mockReturnValue(throwError(() => givenAxiosError('GOOGLE_TOKEN', 400)));
+
+      await expect(sut.getUserByGoogleToken('GOOGLE_TOKEN')).rejects.toThrow(UnauthorizedException);
+      expect(printed(errorSpy.mock.calls[0][0])).not.toContain('GOOGLE_TOKEN');
+    });
+
+    it('이메일이 확인되지 않은 Google 계정이면 401 인 경우', async () => {
+      givenGoogleResponses({ aud: 'ios-client-id' }, { email: 'test@example.com', email_verified: false });
+
+      await expect(sut.getUserByGoogleToken('GOOGLE_TOKEN')).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
   describe('Apple', () => {
     const { privateKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
 
