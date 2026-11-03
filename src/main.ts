@@ -29,4 +29,6 @@ async function bootstrap() {
   }
   await app.listen(port);
 }
-bootstrap();
+// CommonJS 라 최상위 await 를 쓰지 않는다. 기동이 실패하면 처리되지 않은 rejection 으로
+// 오류가 출력되고 프로세스가 끝난다(Node 기본 동작) — 예전 bootstrap(); 과 같다
+void bootstrap();
