@@ -9,7 +9,11 @@
   * Test : Vitest (`npm run test`, e2e 는 `npm run test:e2e` — 설정은 `vitest.config.mts`·`vitest.config.e2e.mts`)
   * Lint : oxlint (`npm run lint` 는 검사만, 고치기는 `npm run lint:fix` — 설정은 `.oxlintrc.json`)
   * Language: TypeScript
-  * Framework: NestJs
+  * Framework: NestJs 12 (CommonJS 프로젝트)
+    * Nest 12 패키지는 ESM 전용이라 Node 의 `require(esm)` 으로 불러온다(Node 20.19+/22.12+, 이 저장소는 24.22.1+).
+      그래서 `tsconfig.json` 은 `module`·`moduleResolution` 이 `nodenext` 지만 `package.json` 에 `"type": "module"` 이 없어 출력은 CommonJS 다
+    * AWS Lambda(Node 20·22·24 런타임)에 올리면 `require(esm)` 이 기본으로 꺼져 있어 환경 변수 `NODE_OPTIONS=--experimental-require-module` 이 필요하다
+      ([NestJS migration guide](https://docs.nestjs.com/migration-guide))
   * ORM : TypeORM
   * DB: mysql (mysql 아닐시 변경 필요)
 
