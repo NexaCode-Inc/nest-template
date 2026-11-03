@@ -1,4 +1,4 @@
-import { mock, MockProxy, mockReset } from 'jest-mock-extended';
+import { mock, MockProxy, mockReset } from 'vitest-mock-extended';
 import { Repository } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
 import { UserSocialService } from './user.social.service';

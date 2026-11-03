@@ -6,6 +6,7 @@
   * Node.js : 24 (24.22.1 이상 — 2026-10-21 Node.js 보안 릴리스가 들어간 버전. `.nvmrc`, `package.json` engines)
     * Node.js 20 은 지원이 끝나(EOL) 보안 수정을 받지 않는다. 배포 환경도 24.22.1 이상으로 맞춘다
   * Node Version Control : NPM
+  * Test : Vitest (`npm run test`, e2e 는 `npm run test:e2e` — 설정은 `vitest.config.mts`·`vitest.config.e2e.mts`)
   * Language: TypeScript
   * Framework: NestJs
   * ORM : TypeORM

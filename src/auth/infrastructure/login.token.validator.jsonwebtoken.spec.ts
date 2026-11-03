@@ -2,7 +2,7 @@ import { UnauthorizedException } from '@nestjs/common';
 import { sign } from 'jsonwebtoken';
 import { ILoginUserInfo } from '../interface/login.user';
 import { LoginTokenValidatorJsonwebtoken } from './login.token.validator.jsonwebtoken';
-import { mock, MockProxy } from 'jest-mock-extended';
+import { mock, MockProxy } from 'vitest-mock-extended';
 import { MockConfigService } from '../../common/test/config.service';
 
 describe('login token validator With jsonwebtoken 테스트', () => {

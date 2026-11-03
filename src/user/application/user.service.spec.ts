@@ -1,16 +1,16 @@
 import { UserService } from './user.service';
-import { mock, MockProxy, mockReset } from 'jest-mock-extended';
+import { mock, MockProxy, mockReset } from 'vitest-mock-extended';
 import { PasswordBcryptEncrypt } from '../../auth/infrastructure/password.bcrypt.encrypt';
 import { UserLoginByEmailPasswordReqDto, UserSignUpReqDto } from '../api/user.req.dto';
 import { ILoginTokenValidator } from '../../auth/interface/login.token.validator';
-import { BadRequestException, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { ILoginToken } from '../../auth/interface/token';
 import { UserEntity } from '../../entity/user.entity';
 import { Repository } from 'typeorm';
 import { ILoginUserInfo } from '../../auth/interface/login.user';
 import { UserEntityTest } from '../../../test/user.entity.test';
 
-jest.mock('typeorm-transactional', () => ({
+vi.mock('typeorm-transactional', () => ({
   Transactional: () => () => ({}),
 }));
 
@@ -309,7 +309,7 @@ describe('user login service Test', () => {
 
       await expect(async () => {
         await sut.getLoginTokenByRefresh(givenTokenString);
-      }).rejects.toThrow(new InternalServerErrorException('USER_DOES_NOT_EXIST'));
+      }).rejects.toThrow(new BadRequestException('USER_DOES_NOT_EXIST'));
     });
 
     it('refresh token 이 만료 된 경우', async () => {
