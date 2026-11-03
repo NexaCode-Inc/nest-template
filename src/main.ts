@@ -1,13 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { initializeTransactionalContext } from 'typeorm-transactional';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { TransformResInterceptor } from './common/api/transform.res.interceptor';
 
 async function bootstrap() {
-  initializeTransactionalContext();
-
   const app = await NestFactory.create(AppModule);
 
   app.enableCors();
