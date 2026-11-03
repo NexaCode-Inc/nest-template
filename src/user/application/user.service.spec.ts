@@ -194,12 +194,13 @@ describe('user login service Test', () => {
         refreshToken: { value: 'token', expiredAt: '2024-09-16T00:00:00' },
       };
 
-      loginTokenValidator.validateByToken.calledWith(givenTokenString).mockReturnValue(givenUserInfo);
+      loginTokenValidator.validateByToken.calledWith(givenTokenString, 'refresh').mockReturnValue(givenUserInfo);
 
+      // 토큰을 받은 뒤 이름이 바뀐 사용자
       userRepository.findOne.mockResolvedValue({
         ...UserEntityTest(),
-        id: 0,
-        name: 'name',
+        id: 1,
+        name: 'renamed',
         email: 'test@gmail.com',
         password: 'securePassword',
         provider: null,
@@ -207,11 +208,13 @@ describe('user login service Test', () => {
         updatedAt: new Date(),
         deletedAt: null,
       });
-      loginTokenValidator.issuance.calledWith(givenUserInfo).mockReturnValue(givenToken);
+      loginTokenValidator.issuance.mockReturnValue(givenToken);
 
       const result = await sut.getAccessByRefresh(givenTokenString);
 
       expect(result.accessToken).toBeDefined();
+      // 토큰 안의 값(name)이 아니라 저장된 사용자 정보로 발급한다
+      expect(loginTokenValidator.issuance).toHaveBeenCalledWith({ id: 1, name: 'renamed', email: 'test@gmail.com' });
     });
 
     it('refresh token 의 유저가 데이터베이스에 존재하지 않을 경우', async () => {
@@ -222,7 +225,7 @@ describe('user login service Test', () => {
         email: 'test@gmail.com',
       };
 
-      loginTokenValidator.validateByToken.calledWith(givenTokenString).mockReturnValue(givenUserInfo);
+      loginTokenValidator.validateByToken.calledWith(givenTokenString, 'refresh').mockReturnValue(givenUserInfo);
 
       userRepository.findOne.mockResolvedValue(null);
 
@@ -234,7 +237,7 @@ describe('user login service Test', () => {
     it('refresh token 이 만료 된 경우', async () => {
       const givenTokenString = 'GIVEN_TOKEN';
 
-      loginTokenValidator.validateByToken.calledWith(givenTokenString).mockImplementation(() => {
+      loginTokenValidator.validateByToken.calledWith(givenTokenString, 'refresh').mockImplementation(() => {
         throw new Error('토큰만료');
       });
 
@@ -246,7 +249,7 @@ describe('user login service Test', () => {
     it('refresh token 이 올바르지 않을 경우', async () => {
       const givenTokenString = 'GIVEN_TOKEN';
 
-      loginTokenValidator.validateByToken.calledWith(givenTokenString).mockImplementation(() => {
+      loginTokenValidator.validateByToken.calledWith(givenTokenString, 'refresh').mockImplementation(() => {
         throw new Error('토큰 에러');
       });
 
@@ -269,11 +272,12 @@ describe('user login service Test', () => {
         refreshToken: { value: 'token', expiredAt: '2024-09-16T00:00:00' },
       };
 
-      loginTokenValidator.validateByToken.calledWith(givenTokenString).mockReturnValue(givenUserInfo);
+      loginTokenValidator.validateByToken.calledWith(givenTokenString, 'refresh').mockReturnValue(givenUserInfo);
+      // 토큰을 받은 뒤 이름이 바뀐 사용자
       userRepository.findOne.mockResolvedValue({
         ...UserEntityTest(),
-        id: 0,
-        name: 'name',
+        id: 1,
+        name: 'renamed',
         email: 'test@gmail.com',
         password: 'securePassword',
         provider: null,
@@ -281,12 +285,14 @@ describe('user login service Test', () => {
         updatedAt: new Date(),
         deletedAt: null,
       });
-      loginTokenValidator.issuance.calledWith(givenUserInfo).mockReturnValue(givenToken);
+      loginTokenValidator.issuance.mockReturnValue(givenToken);
 
       const result = await sut.getLoginTokenByRefresh(givenTokenString);
 
       expect(result.accessToken).toBeDefined();
       expect(result.refreshToken).toBeDefined();
+      // 토큰 안의 값(name)이 아니라 저장된 사용자 정보로 발급한다
+      expect(loginTokenValidator.issuance).toHaveBeenCalledWith({ id: 1, name: 'renamed', email: 'test@gmail.com' });
     });
 
     it('refresh token 의 유저가 데이터베이스에 존재하지 않을 경우', async () => {
@@ -297,7 +303,7 @@ describe('user login service Test', () => {
         email: 'test@gmail.com',
       };
 
-      loginTokenValidator.validateByToken.calledWith(givenTokenString).mockReturnValue(givenUserInfo);
+      loginTokenValidator.validateByToken.calledWith(givenTokenString, 'refresh').mockReturnValue(givenUserInfo);
 
       userRepository.findOne.mockResolvedValue(null);
 
@@ -309,7 +315,7 @@ describe('user login service Test', () => {
     it('refresh token 이 만료 된 경우', async () => {
       const givenTokenString = 'GIVEN_TOKEN';
 
-      loginTokenValidator.validateByToken.calledWith(givenTokenString).mockImplementation(() => {
+      loginTokenValidator.validateByToken.calledWith(givenTokenString, 'refresh').mockImplementation(() => {
         throw new UnauthorizedException('expired token');
       });
 
@@ -321,7 +327,7 @@ describe('user login service Test', () => {
     it('refresh token 이 올바르지 않을 경우', async () => {
       const givenTokenString = 'GIVEN_TOKEN';
 
-      loginTokenValidator.validateByToken.calledWith(givenTokenString).mockImplementation(() => {
+      loginTokenValidator.validateByToken.calledWith(givenTokenString, 'refresh').mockImplementation(() => {
         throw new UnauthorizedException('token error');
       });
 

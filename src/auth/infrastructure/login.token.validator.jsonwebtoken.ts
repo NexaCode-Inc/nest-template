@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtPayload, sign, TokenExpiredError, verify } from 'jsonwebtoken';
 import { addSeconds, format } from 'date-fns';
 import { ILoginToken } from '../interface/token';
-import { ILoginTokenValidator } from '../interface/login.token.validator';
+import { ILoginTokenType, ILoginTokenValidator } from '../interface/login.token.validator';
 import { ConfigService } from '@nestjs/config';
 import { ILoginUserInfo } from '../interface/login.user';
 import { DateFormatStr } from '../../common/domain/date.format.str';
@@ -19,6 +19,16 @@ export class LoginTokenValidatorJsonwebtoken implements ILoginTokenValidator {
     };
   }
 
+  // 토큰에 담는 값. type 으로 access 와 refresh 를 구분한다
+  private toPayload(loginUser: ILoginUserInfo, tokenType: ILoginTokenType) {
+    return {
+      id: loginUser.id,
+      name: loginUser.name,
+      email: loginUser.email,
+      type: tokenType,
+    };
+  }
+
   // 토큰 발급
   issuance(loginUser: ILoginUserInfo): ILoginToken {
     const now = new Date();
@@ -30,10 +40,10 @@ export class LoginTokenValidatorJsonwebtoken implements ILoginTokenValidator {
     const accessTokenExpire = addSeconds(now, accessTokenExpireSecond);
     const refreshTokenExpire = addSeconds(now, refreshTokenExpireSecond);
 
-    const accessToken = sign(loginUser, secretJwtKey, {
+    const accessToken = sign(this.toPayload(loginUser, 'access'), secretJwtKey, {
       expiresIn: accessTokenExpireSecond,
     });
-    const refreshToken = sign(loginUser, secretJwtKey, {
+    const refreshToken = sign(this.toPayload(loginUser, 'refresh'), secretJwtKey, {
       expiresIn: refreshTokenExpireSecond,
     });
 
@@ -49,14 +59,20 @@ export class LoginTokenValidatorJsonwebtoken implements ILoginTokenValidator {
     };
   }
 
-  // access token 으로 유효성 검증
-  validateByToken(token: string) {
+  // 토큰 유효성과 종류(tokenType)를 함께 검증한다.
+  // refresh 토큰으로 API 를 부르거나 access 토큰으로 재발급받지 못하게 한다
+  validateByToken(token: string, tokenType: ILoginTokenType) {
     const secretJwtKey: string = this.configService.getOrThrow('TOKEN_SECRET_KEY');
 
     try {
       const tokenDecoded = verify(token, secretJwtKey, { complete: true });
+      const payload = tokenDecoded.payload as JwtPayload;
 
-      return this.transformUserInfo(tokenDecoded.payload as JwtPayload);
+      if (payload.type !== tokenType) {
+        throw new UnauthorizedException('토큰 에러');
+      }
+
+      return this.transformUserInfo(payload);
     } catch (e) {
       if (e) {
         if (e instanceof TokenExpiredError) {

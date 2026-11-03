@@ -17,7 +17,7 @@ export class AuthUserAuthorizationGuard implements CanActivate {
     }
     const token = bearerToken.split(' ')[1];
 
-    request.user = this.loginTokenValidator.validateByToken(token);
+    request.user = this.loginTokenValidator.validateByToken(token, 'access');
 
     return true;
   }

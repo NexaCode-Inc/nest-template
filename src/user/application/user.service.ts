@@ -83,7 +83,7 @@ export class UserService {
   }
 
   async getAccessByRefresh(token: string) {
-    const userDecode = this.loginTokenValidator.validateByToken(token);
+    const userDecode = this.loginTokenValidator.validateByToken(token, 'refresh');
 
     const user = await this.userRepository.findOne({
       where: { id: userDecode.id },
@@ -93,7 +93,8 @@ export class UserService {
       throw new BadRequestException('USER_DOES_NOT_EXIST');
     }
 
-    const loginToken = this.loginTokenValidator.issuance(userDecode);
+    // 토큰에 담긴 값이 아니라 지금 저장된 사용자 정보로 발급한다
+    const loginToken = this.loginTokenValidator.issuance({ id: user.id, name: user.name, email: user.email });
 
     return {
       accessToken: loginToken.accessToken,
@@ -101,7 +102,7 @@ export class UserService {
   }
 
   async getLoginTokenByRefresh(token: string) {
-    const userDecode = this.loginTokenValidator.validateByToken(token);
+    const userDecode = this.loginTokenValidator.validateByToken(token, 'refresh');
 
     const user = await this.userRepository.findOne({
       where: { id: userDecode.id },
@@ -111,7 +112,8 @@ export class UserService {
       throw new BadRequestException('USER_DOES_NOT_EXIST');
     }
 
-    return this.loginTokenValidator.issuance(userDecode);
+    // 토큰에 담긴 값이 아니라 지금 저장된 사용자 정보로 발급한다
+    return this.loginTokenValidator.issuance({ id: user.id, name: user.name, email: user.email });
   }
 
   async delete(user: ILoginUserInfo) {
