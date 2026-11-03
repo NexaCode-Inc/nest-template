@@ -6,6 +6,18 @@ import { IUserGetInfo } from '../interface/user.social';
 import * as jwt from 'jsonwebtoken';
 import axios, { AxiosError } from 'axios';
 
+// 소셜 공급자 호출 제한 시간(ms). 응답이 없을 때 요청이 끝없이 걸리지 않게 한다
+export const SOCIAL_HTTP_TIMEOUT_MS = 5000;
+
+// 외부 호출 실패 로그용 설명. AxiosError 전체에는 요청 헤더(소셜 토큰)와
+// 본문(Apple client_secret)이 들어 있어서 상태 코드와 메시지만 남긴다
+export const describeExternError = (error: unknown): string => {
+  if (axios.isAxiosError(error)) {
+    return `status=${error.response?.status ?? 'none'} ${error.message}`;
+  }
+  return error instanceof Error ? error.message : 'unknown error';
+};
+
 @Injectable()
 export class SocialExtern {
   private logger = new Logger('SOCIAL');
@@ -44,7 +56,7 @@ export class SocialExtern {
         })
         .pipe(
           catchError((error: AxiosError) => {
-            this.logger.error(error);
+            this.logger.error(`naver user info failed: ${describeExternError(error)}`);
             throw new UnauthorizedException('USER_SOCIAL_LOGIN_FAIL');
           }),
         ),
@@ -79,14 +91,13 @@ export class SocialExtern {
         })
         .pipe(
           catchError((error: AxiosError) => {
-            this.logger.error(error);
+            this.logger.error(`kakao user info failed: ${describeExternError(error)}`);
             throw new UnauthorizedException('USER_SOCIAL_LOGIN_FAIL');
           }),
         ),
     );
 
     const { kakao_account } = data;
-    this.logger.log(JSON.stringify(data));
     let phone = '';
     let email = kakao_account.email;
     let name = '';
@@ -144,18 +155,22 @@ export class SocialExtern {
     params.append('grant_type', 'authorization_code');
 
     try {
-      const response = await axios.post('https://appleid.apple.com/auth/token', params);
+      const response = await axios.post('https://appleid.apple.com/auth/token', params, {
+        timeout: SOCIAL_HTTP_TIMEOUT_MS,
+      });
+      // 응답에는 id_token·refresh_token 이 들어 있어서 로그에 남기지 않는다
       const data: any = response.data;
-      this.logger.verbose(JSON.stringify(data));
       return data;
     } catch (e) {
-      this.logger.error(e);
+      this.logger.error(`apple token request failed: ${describeExternError(e)}`);
       throw e;
     }
   }
 
   async validateAppleToken(idToken: string): Promise<IUserGetInfo> {
-    const applePublicKeys = await axios.get('https://appleid.apple.com/auth/keys');
+    const applePublicKeys = await axios.get('https://appleid.apple.com/auth/keys', {
+      timeout: SOCIAL_HTTP_TIMEOUT_MS,
+    });
     const keys = applePublicKeys.data.keys;
 
     // 적절한 키로 JWT 검증
