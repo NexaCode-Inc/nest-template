@@ -8,6 +8,10 @@
   * Node Version Control : NPM
   * Test : Vitest (`npm run test`, e2e 는 `npm run test:e2e` — 설정은 `vitest.config.mts`·`vitest.config.e2e.mts`)
   * Lint : oxlint (`npm run lint` 는 검사만, 고치기는 `npm run lint:fix` — 설정은 `.oxlintrc.json`)
+  * Excel : write-excel-file (엑셀 만들기 — 폰트·색·테두리·정렬·병합·열 너비 지원, 의존성 1개)
+    * 수십만 행을 행 단위로 스트리밍해야 하거나 서식이 복잡하면 그 프로젝트에서 exceljs 를 추가한다.
+      exceljs 4.4.0 은 2024-01 이후 개발이 멈췄고 취약한 옛 의존성(uuid 8·archiver 5)이 있어 npm audit 에 moderate 가 남는다 — 그 이유를 프로젝트에 기록한다
+    * 업로드된 엑셀을 읽어야 하면 같은 계열의 read-excel-file 을 쓴다
   * Language: TypeScript
   * Framework: NestJs 12 (CommonJS 프로젝트)
     * Nest 12 패키지는 ESM 전용이라 Node 의 `require(esm)` 으로 불러온다(Node 20.19+/22.12+, 이 저장소는 24.22.1+).

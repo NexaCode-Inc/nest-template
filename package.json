@@ -41,7 +41,6 @@
     "class-validator": "^0.14.1",
     "cli-highlight": "^2.1.11",
     "date-fns": "^3.6.0",
-    "exceljs": "^4.4.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.11.0",
     "nodemailer": "^10.3.1",
@@ -50,7 +49,8 @@
     "sql-formatter": "^15.4.11",
     "typeorm": "^0.3.20",
     "typeorm-naming-strategies": "^4.1.0",
-    "typeorm-transactional": "^0.5.0"
+    "typeorm-transactional": "^0.5.0",
+    "write-excel-file": "^4.1.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^12.0.0",
@@ -72,5 +72,10 @@
     "vite": "^8.3.5",
     "vitest": "^4.1.12",
     "vitest-mock-extended": "^5.1.1"
+  },
+  "overrides": {
+    "@nestjs/cli": {
+      "minimatch": "^11.0.1"
+    }
   }
 }
