@@ -3,9 +3,9 @@ import { UserLoginByEmailPasswordReqDto, UserSignUpReqDto } from '../api/user.re
 import { PasswordBcryptEncrypt } from '../../auth/infrastructure/password.bcrypt.encrypt';
 import { ILoginTokenValidator } from '../../auth/interface/login.token.validator';
 import { UserEntity } from '../../entity/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Transactional } from 'typeorm-transactional';
+import { Transactional, TransactionHost } from '@nestjs-cls/transactional';
+import type { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { ILoginUserInfo } from '../../auth/interface/login.user';
 
 @Injectable()
@@ -14,9 +14,14 @@ export class UserService {
     private passwordEncrypt: PasswordBcryptEncrypt,
     @Inject('ILoginTokenValidator')
     private loginTokenValidator: ILoginTokenValidator,
-    @InjectRepository(UserEntity)
-    private userRepository: Repository<UserEntity>,
+    private txHost: TransactionHost<TransactionalAdapterTypeOrm>,
   ) {}
+
+  // @Transactional() 안에서 부르면 그 트랜잭션에, 밖에서 부르면 기본 연결에 붙는 저장소.
+  // @InjectRepository 로 받은 저장소는 트랜잭션에 묶이지 않는다(@nestjs-cls/transactional TypeORM 어댑터)
+  private get userRepository(): Repository<UserEntity> {
+    return this.txHost.tx.getRepository(UserEntity);
+  }
 
   async isExistEmail(email: string) {
     const dupEmailUser = await this.userRepository.findOne({

@@ -1,25 +1,33 @@
 import { UserService } from './user.service';
-import { mock, MockProxy, mockReset } from 'jest-mock-extended';
+import { mock, MockProxy, mockReset } from 'vitest-mock-extended';
 import { PasswordBcryptEncrypt } from '../../auth/infrastructure/password.bcrypt.encrypt';
 import { UserLoginByEmailPasswordReqDto, UserSignUpReqDto } from '../api/user.req.dto';
 import { ILoginTokenValidator } from '../../auth/interface/login.token.validator';
-import { BadRequestException, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { ILoginToken } from '../../auth/interface/token';
 import { UserEntity } from '../../entity/user.entity';
 import { Repository } from 'typeorm';
 import { ILoginUserInfo } from '../../auth/interface/login.user';
 import { UserEntityTest } from '../../../test/user.entity.test';
+import type { TransactionHost } from '@nestjs-cls/transactional';
+import type { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 
-jest.mock('typeorm-transactional', () => ({
-  Transactional: () => () => ({}),
+// @Transactional() 은 Nest·CLS 없이 아무 일도 하지 않게 한다(@nestjs-cls/transactional 문서의 시험 방법)
+vi.mock('@nestjs-cls/transactional', () => ({
+  Transactional: () => () => undefined,
+  TransactionHost: class {},
 }));
 
 describe('user login service Test', () => {
   const userRepository: MockProxy<Repository<UserEntity>> = mock<Repository<UserEntity>>();
   const passwordEncrypt: MockProxy<PasswordBcryptEncrypt> = mock<PasswordBcryptEncrypt>();
   const loginTokenValidator: MockProxy<ILoginTokenValidator> = mock<ILoginTokenValidator>();
+  // 서비스는 저장소를 TransactionHost 의 tx 에서 꺼낸다 — 시험에서는 mock 저장소를 돌려준다
+  const txHost = {
+    tx: { getRepository: () => userRepository },
+  } as unknown as TransactionHost<TransactionalAdapterTypeOrm>;
 
-  const sut = new UserService(passwordEncrypt, loginTokenValidator, userRepository);
+  const sut = new UserService(passwordEncrypt, loginTokenValidator, txHost);
 
   beforeEach(() => {
     mockReset(passwordEncrypt);
@@ -309,7 +317,7 @@ describe('user login service Test', () => {
 
       await expect(async () => {
         await sut.getLoginTokenByRefresh(givenTokenString);
-      }).rejects.toThrow(new InternalServerErrorException('USER_DOES_NOT_EXIST'));
+      }).rejects.toThrow(new BadRequestException('USER_DOES_NOT_EXIST'));
     });
 
     it('refresh token 이 만료 된 경우', async () => {

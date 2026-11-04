@@ -66,7 +66,7 @@ export class SocialExtern {
           headers: { Authorization: `Bearer ${token}` },
         })
         .pipe(
-          catchError((error: AxiosError) => {
+          catchError(() => {
             throw new UnauthorizedException('USER_SOCIAL_LOGIN_FAIL');
           }),
         ),
@@ -136,7 +136,7 @@ export class SocialExtern {
 
     const { kakao_account } = data;
     let phone = '';
-    let email = kakao_account.email;
+    const email = kakao_account.email;
     let name = '';
     if (!kakao_account || !kakao_account.email) {
       throw new BadRequestException('kakao email not exist');

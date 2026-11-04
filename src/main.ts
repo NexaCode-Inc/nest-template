@@ -1,13 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { initializeTransactionalContext } from 'typeorm-transactional';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { TransformResInterceptor } from './common/api/transform.res.interceptor';
 
 async function bootstrap() {
-  initializeTransactionalContext();
-
   const app = await NestFactory.create(AppModule);
 
   app.enableCors();
@@ -29,4 +26,6 @@ async function bootstrap() {
   }
   await app.listen(port);
 }
-bootstrap();
+// CommonJS 라 최상위 await 를 쓰지 않는다. 기동이 실패하면 처리되지 않은 rejection 으로
+// 오류가 출력되고 프로세스가 끝난다(Node 기본 동작) — 예전 bootstrap(); 과 같다
+void bootstrap();

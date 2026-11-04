@@ -32,7 +32,7 @@ export class FileService {
     try {
       const key = dto.filePath.split('.com/').slice(1).join('');
       return this.fileStorage.downloadFileToLocal(key);
-    } catch (error) {
+    } catch {
       throw new Error('올바른 파일 경로가 아닙니다.');
     }
   }

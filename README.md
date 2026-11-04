@@ -6,9 +6,23 @@
   * Node.js : 24 (24.22.1 이상 — 2026-10-21 Node.js 보안 릴리스가 들어간 버전. `.nvmrc`, `package.json` engines)
     * Node.js 20 은 지원이 끝나(EOL) 보안 수정을 받지 않는다. 배포 환경도 24.22.1 이상으로 맞춘다
   * Node Version Control : NPM
+  * Test : Vitest (`npm run test`, e2e 는 `npm run test:e2e` — 설정은 `vitest.config.mts`·`vitest.config.e2e.mts`)
+  * Lint : oxlint (`npm run lint` 는 검사만, 고치기는 `npm run lint:fix` — 설정은 `.oxlintrc.json`)
+  * Transaction : @nestjs-cls/transactional + TypeORM 어댑터 (`@Transactional()`)
+    * 트랜잭션에 묶일 저장소는 `TransactionHost` 의 `tx`(EntityManager)에서 꺼낸다 — `this.txHost.tx.getRepository(Entity)`.
+      `@InjectRepository` 로 받은 저장소는 트랜잭션에 묶이지 않는다. 예: `src/user/application/user.service.ts`
+  * Excel : write-excel-file (엑셀 만들기 — 폰트·색·테두리·정렬·병합·열 너비 지원, 의존성 1개)
+    * 수십만 행을 행 단위로 스트리밍해야 하거나 서식이 복잡하면 그 프로젝트에서 exceljs 를 추가한다.
+      exceljs 4.4.0 은 2024-01 이후 개발이 멈췄고 취약한 옛 의존성(uuid 8·archiver 5)이 있어 npm audit 에 moderate 가 남는다 — 그 이유를 프로젝트에 기록한다
+    * 업로드된 엑셀을 읽어야 하면 같은 계열의 read-excel-file 을 쓴다
   * Language: TypeScript
-  * Framework: NestJs
-  * ORM : TypeORM
+  * Framework: NestJs 12 (CommonJS 프로젝트)
+    * Nest 12 패키지는 ESM 전용이라 Node 의 `require(esm)` 으로 불러온다(Node 20.19+/22.12+, 이 저장소는 24.22.1+).
+      그래서 `tsconfig.json` 은 `module`·`moduleResolution` 이 `nodenext` 지만 `package.json` 에 `"type": "module"` 이 없어 출력은 CommonJS 다
+    * AWS Lambda(Node 20·22·24 런타임)에 올리면 `require(esm)` 이 기본으로 꺼져 있어 환경 변수 `NODE_OPTIONS=--experimental-require-module` 이 필요하다
+      ([NestJS migration guide](https://docs.nestjs.com/migration-guide))
+  * ORM : TypeORM 1.x (이름 규칙은 `src/database/snake-naming.strategy.ts` — 테이블·컬럼은 snake_case)
+    * 1.x 부터 where 조건에 `null`·`undefined` 가 들어가면 예외가 난다(`invalidWhereValuesBehavior` 기본값). 값이 없을 수 있으면 `IsNull()` 을 쓴다
   * DB: mysql (mysql 아닐시 변경 필요)
 
 # .env database 

@@ -3,7 +3,8 @@ import { inspect } from 'util';
 import { HttpService } from '@nestjs/axios';
 import { Logger, UnauthorizedException } from '@nestjs/common';
 import axios, { AxiosError, AxiosHeaders, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import { mock, MockProxy, mockReset } from 'jest-mock-extended';
+import type { MockInstance } from 'vitest';
+import { mock, MockProxy, mockReset } from 'vitest-mock-extended';
 import { of, throwError } from 'rxjs';
 import { MockConfigService } from '../../common/test/config.service';
 import { describeExternError, SOCIAL_HTTP_TIMEOUT_MS, SocialExtern } from './social.extern';
@@ -31,19 +32,19 @@ describe('SocialExtern 소셜 공급자 호출 테스트', () => {
   const configService: MockProxy<MockConfigService> = mock<MockConfigService>();
   const sut = new SocialExtern(httpService, configService);
 
-  let errorSpy: jest.SpyInstance;
-  let logSpy: jest.SpyInstance;
-  let verboseSpy: jest.SpyInstance;
+  let errorSpy: MockInstance;
+  let logSpy: MockInstance;
+  let verboseSpy: MockInstance;
 
   beforeEach(() => {
     mockReset(httpService);
-    errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
-    logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
-    verboseSpy = jest.spyOn(Logger.prototype, 'verbose').mockImplementation(() => undefined);
+    errorSpy = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+    logSpy = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+    verboseSpy = vi.spyOn(Logger.prototype, 'verbose').mockImplementation(() => undefined);
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('describeExternError 는 상태와 메시지만 남기고 헤더·본문의 비밀 값은 남기지 않은 경우', () => {
@@ -140,7 +141,7 @@ describe('SocialExtern 소셜 공급자 호출 테스트', () => {
     });
 
     it('토큰 요청에 제한 시간을 걸고 응답의 토큰을 로그에 남기지 않은 경우', async () => {
-      const postSpy = jest
+      const postSpy = vi
         .spyOn(axios, 'post')
         .mockResolvedValue({ data: { id_token: 'ID_TOKEN', refresh_token: 'REFRESH_TOKEN' } });
 
@@ -154,7 +155,7 @@ describe('SocialExtern 소셜 공급자 호출 테스트', () => {
     });
 
     it('토큰 요청이 실패하면 client_secret 없이 실패 로그를 남긴 경우', async () => {
-      jest.spyOn(axios, 'post').mockRejectedValue(givenAxiosError('CLIENT_SECRET_JWT', 400));
+      vi.spyOn(axios, 'post').mockRejectedValue(givenAxiosError('CLIENT_SECRET_JWT', 400));
 
       await expect(sut.getAppleToken('CODE', 'APPLE')).rejects.toBeInstanceOf(AxiosError);
 
@@ -163,7 +164,7 @@ describe('SocialExtern 소셜 공급자 호출 테스트', () => {
     });
 
     it('공개 키 요청에 제한 시간을 건 경우', async () => {
-      const getSpy = jest.spyOn(axios, 'get').mockResolvedValue({ data: { keys: [] } });
+      const getSpy = vi.spyOn(axios, 'get').mockResolvedValue({ data: { keys: [] } });
 
       await expect(sut.validateAppleToken('not-a-jwt')).rejects.toThrow('Invalid Apple public key');
 

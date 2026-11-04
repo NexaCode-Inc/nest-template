@@ -50,7 +50,7 @@ describe('LoggerMiddleware 요청 로그 테스트', () => {
 
   describe('use 요청이 끝나면 로그 한 줄', () => {
     it('로그인 요청의 비밀번호가 로그에 남지 않은 경우', () => {
-      const logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+      const logSpy = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
       const sut = new LoggerMiddleware();
       const req = {
         ip: '127.0.0.1',
@@ -60,7 +60,7 @@ describe('LoggerMiddleware 요청 로그 테스트', () => {
         get: () => 'jest',
       } as unknown as Request;
       const res = Object.assign(new EventEmitter(), { statusCode: 200, locals: {} }) as unknown as Response;
-      const next: NextFunction = jest.fn();
+      const next: NextFunction = vi.fn();
 
       sut.use(req, res, next);
       res.emit('finish');

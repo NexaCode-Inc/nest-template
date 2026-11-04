@@ -1,12 +1,5 @@
 import { Body, Controller, Logger, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
-import {
-  ApiBadRequestResponse,
-  ApiBearerAuth,
-  ApiConsumes,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiConsumes, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FileService } from '../application/file.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileDownloadReqDto, FileUploadImageReqDto } from './file.req.dto';
@@ -40,7 +33,7 @@ export class FileController {
   // ============================================
   @UseInterceptors(FileInterceptor('imageFile'))
   @Post('file/image')
-  createImage(@UploadedFile() imageFile: Express.Multer.File, @Body() dto: FileUploadImageReqDto) {
+  createImage(@UploadedFile() imageFile: Express.Multer.File, @Body() _dto: FileUploadImageReqDto) {
     return this.fileService.uploadImageFile(imageFile);
   }
 

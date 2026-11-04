@@ -1,10 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { DataSource } from 'typeorm';
-import { addTransactionalDataSource } from 'typeorm-transactional';
-import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { SqlLogger } from '../common/api/sql.logger';
+import { SnakeNamingStrategy } from './snake-naming.strategy';
 
 @Module({
   imports: [
@@ -24,13 +22,7 @@ import { SqlLogger } from '../common/api/sql.logger';
         synchronize: configService.get('DATABASE_SYNCHRONIZE') === 'true',
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
       }),
-      async dataSourceFactory(options) {
-        if (!options) {
-          throw new Error('Invalid options passed');
-        }
-
-        return addTransactionalDataSource(new DataSource(options));
-      },
+      // 트랜잭션은 app.module.ts 의 ClsModule(@nestjs-cls/transactional)이 이 DataSource 로 연다
     }),
   ],
 })
