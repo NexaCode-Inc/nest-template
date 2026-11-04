@@ -5,7 +5,6 @@ import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
-  ApiInternalServerErrorResponse,
   ApiOkResponse,
   ApiOperation,
   ApiResponse,
@@ -86,16 +85,13 @@ export class UserController {
     description: 'access 토큰 재발급 성공',
   })
   @ApiBadRequestResponse({
-    description: 'refresh token 을 입력해 주세요.',
+    description: 'refresh token 을 입력해 주세요.<br>' + '존재하지 않거나 삭제된 유저입니다.',
   })
   @ApiUnauthorizedResponse({
     description: '토큰이 만료되었습니다.<br>' + '토큰에 에러가 존재합니다.',
   })
   @ApiForbiddenResponse({
     description: '권한이 없습니다.',
-  })
-  @ApiInternalServerErrorResponse({
-    description: '존재하지 않거나 삭제된 유저입니다.',
   })
   // ============================================
   @Post('/user/access-by-refresh')
@@ -113,16 +109,13 @@ export class UserController {
     description: 'access 및 refresh 토큰 재발급 성공',
   })
   @ApiBadRequestResponse({
-    description: 'refresh token 을 입력해 주세요.',
+    description: 'refresh token 을 입력해 주세요.<br>' + '존재하지 않거나 삭제된 유저입니다.',
   })
   @ApiUnauthorizedResponse({
     description: '토큰이 만료되었습니다.<br>' + '토큰에 에러가 존재합니다.',
   })
   @ApiForbiddenResponse({
     description: '권한이 없습니다.',
-  })
-  @ApiInternalServerErrorResponse({
-    description: '존재하지 않거나 삭제된 유저입니다.',
   })
   // ============================================
   @Post('/user/refresh-by-refresh')
