@@ -66,7 +66,7 @@ export class SocialExtern {
           headers: { Authorization: `Bearer ${token}` },
         })
         .pipe(
-          catchError((error: AxiosError) => {
+          catchError(() => {
             throw new UnauthorizedException('USER_SOCIAL_LOGIN_FAIL');
           }),
         ),

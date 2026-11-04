@@ -9,5 +9,14 @@
   },
   "env": {
     "node": true
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.spec.ts"],
+      "rules": {
+        "typescript/unbound-method": "off",
+        "typescript/no-misused-spread": "off"
+      }
+    }
+  ]
 }
