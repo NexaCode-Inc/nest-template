@@ -3,6 +3,8 @@
 ## Description
 * Nexacode NestJs template
 * 기술스택
+  * Node.js : 24 (24.22.1 이상 — 2026-10-21 Node.js 보안 릴리스가 들어간 버전. `.nvmrc`, `package.json` engines)
+    * Node.js 20 은 지원이 끝나(EOL) 보안 수정을 받지 않는다. 배포 환경도 24.22.1 이상으로 맞춘다
   * Node Version Control : NPM
   * Language: TypeScript
   * Framework: NestJs
@@ -32,6 +34,10 @@ MAIL_HOST=MAIL_HOST
 MAIL_PORT=MAIL_PORT
 MAIL_AUTH_ID=MAIL_ID
 MAIL_AUTH_PASSWORD=MAIL_PASSWORD
+
+# Google 로그인: 이 앱의 OAuth 클라이언트 ID (iOS·Android·Web 등 여러 개면 쉼표로 구분)
+# 다른 앱에 발급된 Google 토큰으로는 로그인할 수 없다
+GOOGLE_CLIENT_IDS=GOOGLE_CLIENT_IDS
 ```
 
 ## Installation

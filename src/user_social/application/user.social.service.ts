@@ -86,6 +86,13 @@ export class UserSocialService {
         name: createUser.name,
         email: createUser.email,
       };
+    } else {
+      // 이미 가입한 사용자 — 저장된 사용자 정보로 토큰을 발급한다
+      loginUserInfo = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      };
     }
 
     if (loginUserInfo.id === 0) {
